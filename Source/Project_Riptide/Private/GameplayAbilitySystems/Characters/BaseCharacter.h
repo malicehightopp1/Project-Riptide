@@ -14,10 +14,10 @@ class ABaseCharacter : public ACharacter, public IAbilitySystemInterface
 	GENERATED_BODY()
 
 public:
-	ABaseCharacter();// Sets default values for this character's properties
+	ABaseCharacter(const FObjectInitializer& ObjectInitializer);// Sets default values for this character's properties
 
 	//Ability system component
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities") class UCombatAbilitysystemComponent* CombatAbilitySystemComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Abilities") class UCombatAbilitysystemComponent* CombatAbilitySystemComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CharacterMovement") class UBaseMovementComponent* BaseMovementComponent;
 
 	//Capsule Default Variables
@@ -25,13 +25,14 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "CharacterMovement") float CapsuleInitHeight = 90.0f;
 	
 	//Camera Boom
-	UPROPERTY(EditDefaultsOnly, Category = "Camera | Boom") class USpringArmComponent* CameraBoom;
+	UPROPERTY(EditDefaultsOnly, Category = "Camera | Boom") TObjectPtr<class USpringArmComponent> CameraBoom;
 	UPROPERTY(EditAnywhere, Category = "Camera | Boom") float DefaultTargetArmLength = 450.0f;
 	UPROPERTY(EditAnywhere, Category = "Camera | Boom") FVector DefaultCameraOffset = FVector(0.0f, 0.0f, 50.0f);
-	UPROPERTY(EditAnywhere, Category = "Camera | Boom") float DefaultCameraLagSpeed = 300.0f;
+	UPROPERTY(EditAnywhere, Category = "Camera | Boom") float DefaultCameraLagSpeed = 10.0f;
 	
 	//Camera Component
-	UPROPERTY(EditDefaultsOnly, Category = "Camera") class UCameraComponent* CameraComponent;
+	UPROPERTY(EditDefaultsOnly, Category = "Camera") TObjectPtr<class UCameraComponent> CameraComponent; //for component classes use the TObjectPtr - unreal preferred
+	
 protected:
 	virtual void BeginPlay() override; // Called when the game starts or when spawned
 	virtual void PossessedBy(AController* NewController) override;
