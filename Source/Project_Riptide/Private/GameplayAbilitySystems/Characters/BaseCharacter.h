@@ -21,7 +21,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CharacterMovement") class UBaseMovementComponent* BaseMovementComponent;
 
 	//Capsule Default Variables
-	UPROPERTY(EditDefaultsOnly, Category = "CharacterMovement") float CapsuleInitWidth = 25.0f;
+	UPROPERTY(EditDefaultsOnly, Category = "CharacterMovement") float CapsuleInitWidth = 35.0f;
 	UPROPERTY(EditDefaultsOnly, Category = "CharacterMovement") float CapsuleInitHeight = 90.0f;
 	
 protected:
@@ -30,7 +30,5 @@ protected:
 	virtual void OnRep_PlayerState() override;
 
 public:	
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;	// Called to bind functionality to input
-	
 	virtual  UAbilitySystemComponent* GetAbilitySystemComponent() const override; //grabbing the ability system component for any child of this class
 };
