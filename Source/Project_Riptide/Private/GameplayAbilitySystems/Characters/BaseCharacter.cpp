@@ -27,21 +27,24 @@ ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer) : Su
 	//----------------------------------------------------------------------------------//
 	
 	//Character Movement
-	BaseMovementComponent = Cast<UBaseMovementComponent>(GetMovementComponent());
+	//this is setting the character movement to be our custom one
+	BaseMovementComponent = CastChecked<UBaseMovementComponent>(GetMovementComponent()); //The castChecked will let you know immediatly if the cast fails instead of failing silently 
 	
 	//Initial Capsule size
 	GetCapsuleComponent()->InitCapsuleSize(CapsuleInitWidth,CapsuleInitHeight);
 	
+	/*
 	//Setting rotation settings
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
+	*/
 	
 	//----------------------------------------------------------------------------------//
 	//									Camera Setup
 	//----------------------------------------------------------------------------------//
 
-	//Camera Boom setup
+	/*//Camera Boom setup
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = DefaultTargetArmLength;
@@ -51,7 +54,7 @@ ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer) : Su
 
 	//Camera Component setup
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
-	CameraComponent->SetupAttachment(CameraBoom);
+	CameraComponent->SetupAttachment(CameraBoom);*/
 }
 
 // Called when the game starts or when spawned
@@ -64,12 +67,6 @@ void ABaseCharacter::BeginPlay()
 void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}
-// Called every frame
-void ABaseCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 
 }
 #pragma endregion Init Setup
