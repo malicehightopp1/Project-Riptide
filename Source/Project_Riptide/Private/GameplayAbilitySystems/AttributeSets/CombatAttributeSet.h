@@ -22,12 +22,12 @@ class UCombatAttributeSet : public UAttributeSet
 public:
 	//These might give errors not setup yet
 	
-	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
-	virtual void PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) override;
-	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
+	//virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
+	//virtual void PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) override;
+	//virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
 	
 	//Xp cost to buy the next level 2 * L^2.3 + 84
-	static float GetXPCostForLevel(float CurrentLevel);
+	//static float GetXPCostForLevel(float CurrentLevel);
 	
 	//----------------------------------------------------------------------------------//
 	//									Player Health
@@ -56,4 +56,16 @@ public:
 	ATTRIBUTE_ACCESSORS(UCombatAttributeSet, Endurance)
 	UPROPERTY(BlueprintReadOnly, Category = "AttributeSets  | Stats") FGameplayAttributeData Mind;
 	ATTRIBUTE_ACCESSORS(UCombatAttributeSet, Mind)
+	
+	//----------------------------------------------------------------------------------//
+	//									Player Progression stats
+	//----------------------------------------------------------------------------------//
+	
+	UPROPERTY(BlueprintReadOnly, Category = "AttributeSets | Stats") FGameplayAttributeData CharacterLevel;
+	ATTRIBUTE_ACCESSORS(UCombatAttributeSet, CharacterLevel)
+	UPROPERTY(BlueprintReadOnly, Category = "AttributeSets | Stats") FGameplayAttributeData XP;
+	ATTRIBUTE_ACCESSORS(UCombatAttributeSet, XP)
+	UPROPERTY(BlueprintReadOnly, Category = "AttributeSets  | Stats") FGameplayAttributeData XPReward;
+	ATTRIBUTE_ACCESSORS(UCombatAttributeSet, XPReward)
+	
 };
