@@ -37,6 +37,7 @@ private:
 	//----------------------------------------------------------------------------------//
 	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;	// Called to bind functionality to input
+	virtual void BeginPlay() override;
 
 	//Player movement & look functions
 	void HandleLookInput(const struct FInputActionValue& InputActionValue);
@@ -53,6 +54,4 @@ private:
 	//Input actions
 	UPROPERTY(EditDefaultsOnly, Category = "Input") class UInputAction* LookAction;
 	UPROPERTY(EditDefaultsOnly, Category = "Input") class UInputAction* MoveAction;
-
-	
 };
