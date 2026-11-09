@@ -1,17 +1,11 @@
-# Unreal Engine
 Binaries/
+DerivedDataCache/
 Intermediate/
 Saved/
-DerivedDataCache/
-
-# IDE
 .vs/
 .idea/
 .vscode/
-
-# Compiled files
-*.pdb
-*.obj
-*.pch
-*.dll
-*.exe
+*.sln
+*.log
+.DS_Store
+Thumbs.db
