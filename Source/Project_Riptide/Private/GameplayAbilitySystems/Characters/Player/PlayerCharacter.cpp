@@ -19,7 +19,7 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 	//----------------------------------------------------------------------------------//
 	
 	//Setting rotation settings
-	bUseControllerRotationPitch = true;
+	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
 	
