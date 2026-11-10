@@ -84,5 +84,4 @@ public:
 	
 private:
 	void HandleDeath(const struct FGameplayEffectModCallbackData* Data);
->>>>>>> 669abc4ea362e970c4fe66b6c607d542130e3386
 };
