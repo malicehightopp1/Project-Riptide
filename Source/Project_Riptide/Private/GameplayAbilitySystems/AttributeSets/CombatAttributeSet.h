@@ -20,6 +20,7 @@ class UCombatAttributeSet : public UAttributeSet
 	GENERATED_BODY()
 	 
 public:
+	UCombatAttributeSet();
 	//These might give errors not setup yet
 	
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
@@ -56,4 +57,31 @@ public:
 	ATTRIBUTE_ACCESSORS(UCombatAttributeSet, Endurance)
 	UPROPERTY(BlueprintReadOnly, Category = "AttributeSets  | Stats") FGameplayAttributeData Mind;
 	ATTRIBUTE_ACCESSORS(UCombatAttributeSet, Mind)
+	
+	//----------------------------------------------------------------------------------//
+	//									Player Progression stats
+	//----------------------------------------------------------------------------------//
+	
+	UPROPERTY(BlueprintReadOnly, Category = "AttributeSets | Stats") FGameplayAttributeData CharacterLevel;
+	ATTRIBUTE_ACCESSORS(UCombatAttributeSet, CharacterLevel)
+	UPROPERTY(BlueprintReadOnly, Category = "AttributeSets | Stats") FGameplayAttributeData XP;
+	ATTRIBUTE_ACCESSORS(UCombatAttributeSet, XP)
+	UPROPERTY(BlueprintReadOnly, Category = "AttributeSets  | Stats") FGameplayAttributeData XPReward;
+	ATTRIBUTE_ACCESSORS(UCombatAttributeSet, XPReward)
+	
+	//----------------------------------------------------------------------------------//
+	//									Combat Multipliers
+	//----------------------------------------------------------------------------------//
+	
+	UPROPERTY(BlueprintReadOnly, Category = "AttributeSets | Stats") FGameplayAttributeData WeaponDamageMultiplier;
+	ATTRIBUTE_ACCESSORS(UCombatAttributeSet, WeaponDamageMultiplier)
+	UPROPERTY(BlueprintReadOnly, Category = "AttributeSets  | Stats") FGameplayAttributeData PowerDamageMultiplier;
+	ATTRIBUTE_ACCESSORS(UCombatAttributeSet, PowerDamageMultiplier)
+	
+	//Temporary valie 
+	UPROPERTY(BlueprintReadOnly, Category = "AttributeSets  | Meta") FGameplayAttributeData IncomingDamage;
+	ATTRIBUTE_ACCESSORS(UCombatAttributeSet, IncomingDamage)
+	
+private:
+	void HandleDeath(const struct FGameplayEffectModCallbackData* Data);
 };
