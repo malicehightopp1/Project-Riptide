@@ -61,10 +61,7 @@ void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 		
 		//Player Move
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayerCharacter::HandleMoveInput);
-
-		//Player Jump
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &APlayerCharacter::HandleJumpInput);
-
+		
 		UE_LOG(LogTemp, Warning, TEXT("Input Actions Have been binded!"))
 	}
 }
@@ -87,9 +84,7 @@ void APlayerCharacter::BeginPlay()
 
 void APlayerCharacter::HandleLookInput(const struct FInputActionValue& InputActionValue)
 {
-	FVector2D InputAction = InputActionValue.Get<FVector2D>(); //grabbing the input value from the mouse and right stick (Look input)
-	
-	//Adding rotation using the above vector
+	FVector2D InputAction = InputActionValue.Get<FVector2D>();
 	AddControllerYawInput(InputAction.X);
 	AddControllerPitchInput(InputAction.Y);
 	
@@ -98,19 +93,12 @@ void APlayerCharacter::HandleLookInput(const struct FInputActionValue& InputActi
 
 void APlayerCharacter::HandleMoveInput(const struct FInputActionValue& InputActionValue)
 {
-	FVector2D InputAction = InputActionValue.Get<FVector2D>(); //grabs the X and Y values which represent movement directions
+	FVector2D InputAction = InputActionValue.Get<FVector2D>();
 	
-	InputAction.Normalize(); //this makes sure every direction movement is the same speed
-	
-	//This handles all movement and allows the player to move diagnally
+	InputAction.Normalize();
 	AddMovementInput(GetMoveFWDdirection()* InputAction.Y + GetRightDirection() * InputAction.X);
 	
 	UE_LOG(LogTemp, Warning, TEXT("Move Input is happening"))
-}
-
-void APlayerCharacter::HandleJumpInput(const struct FInputActionValue& InputActionValue)
-{
-	Jump(); //We dont need a "HandleJumpInput" technically we could just call jump, but for consistency we will use it 
 }
 #pragma endregion Player Locomotion/Input Actions
 
