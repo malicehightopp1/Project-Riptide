@@ -83,5 +83,5 @@ public:
 	ATTRIBUTE_ACCESSORS(UCombatAttributeSet, IncomingDamage)
 	
 private:
-	void HandleDeath(const struct FGameplayEffectModCallbackData* Data);
+	void HandleDeath(const FGameplayEffectModCallbackData& Data);
 };

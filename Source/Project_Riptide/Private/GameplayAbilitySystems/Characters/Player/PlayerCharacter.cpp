@@ -49,6 +49,59 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 }
 
 #pragma region Player Locomotion/Input Actions
+
+TSubclassOf<UGameplayEffect> APlayerCharacter::GetStatsEffect() const
+{
+	//Warrior by default, so PIE straight into the open-world map still works
+	ECharacterClass ChosenClass = ECharacterClass::Warrior;
+	if (const UCombatGameInstance* GI = Cast<UCombatGameInstance>(GetGameInstance()))
+	{
+		ChosenClass = GI->SelectedClass;
+	}
+
+	const TSubclassOf<UGameplayEffect>* ClassEffect = ClassEffects.Find(ChosenClass);
+	return ClassEffect ? *ClassEffect : nullptr;
+}
+
+bool APlayerCharacter::TryLevelUpStat(FGameplayAttribute Stat)
+{
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+	if (!ASC || !CombatAttributeSet)
+	{
+		return false;
+	}
+
+	//Only the three spendable stats
+	const bool bIsSpendableStat = Stat == UCombatAttributeSet::GetVitalityAttribute() || Stat == UCombatAttributeSet::GetEnduranceAttribute() || Stat == UCombatAttributeSet::GetMindAttribute();
+	if (!bIsSpendableStat)
+	{
+		return false;
+	}
+
+	const float Cost = GetXPCostForNextLevel();
+	const float CurrentXP = ASC->GetNumericAttributeBase(UCombatAttributeSet::GetXPAttribute());
+	if (CurrentXP < Cost)
+	{
+		return false;
+	}
+
+	const FGameplayAttribute LevelAttr = UCombatAttributeSet::GetCharacterLevelAttribute();
+
+	ASC->SetNumericAttributeBase(UCombatAttributeSet::GetXPAttribute(), CurrentXP - Cost);
+	ASC->SetNumericAttributeBase(Stat, ASC->GetNumericAttributeBase(Stat) + 1.0f);
+	ASC->SetNumericAttributeBase(LevelAttr, ASC->GetNumericAttributeBase(LevelAttr) + 1.0f);
+	return true;
+}
+
+float APlayerCharacter::GetXPCostForNextLevel() const
+{
+	if (!CombatAttributeSet)
+	{
+		return 0.0f;
+	}
+	return UCombatAttributeSet::GetXPCostForLevel(CombatAttributeSet->GetCharacterLevel());
+}
+
 void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -92,8 +145,6 @@ void APlayerCharacter::HandleLookInput(const struct FInputActionValue& InputActi
 	//Adding rotation using the above vector
 	AddControllerYawInput(InputAction.X);
 	AddControllerPitchInput(InputAction.Y);
-	
-	UE_LOG(LogTemp, Warning, TEXT("Look Input is being called by the look action input"))
 }
 
 void APlayerCharacter::HandleMoveInput(const struct FInputActionValue& InputActionValue)
@@ -104,8 +155,6 @@ void APlayerCharacter::HandleMoveInput(const struct FInputActionValue& InputActi
 	
 	//This handles all movement and allows the player to move diagnally
 	AddMovementInput(GetMoveFWDdirection()* InputAction.Y + GetRightDirection() * InputAction.X);
-	
-	UE_LOG(LogTemp, Warning, TEXT("Move Input is happening"))
 }
 
 void APlayerCharacter::HandleJumpInput(const struct FInputActionValue& InputActionValue)

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayAbilitySystems/Characters/BaseCharacter.h"
+#include "GameplayAbilitySystems/GameInstances/CombatGameInstance.h"
 #include "PlayerCharacter.generated.h"
 
 /**
@@ -30,12 +31,20 @@ public:
 	//Camera Component
 	UPROPERTY(EditDefaultsOnly, Category = "Camera") TObjectPtr<class UCameraComponent> CameraComponent; //for component classes use the TObjectPtr - unreal preferred
 	
+	//----------------------------------------------------------------------------------//
+	//										Classes
+	//----------------------------------------------------------------------------------//
+
+	UPROPERTY(EditDefaultsOnly, Category = "Abilities|Effects") TMap<ECharacterClass, TSubclassOf<UGameplayEffect>> ClassEffects;
+protected:   
+	virtual TSubclassOf<UGameplayEffect> GetStatsEffect() const override;
+	
 private:
 	//----------------------------------------------------------------------------------//
 	//							Player Progression and xp
 	//----------------------------------------------------------------------------------//
-	//UFUNCTION(BlueprintCallable, Category = "Leveling") bool TryLevelUpStat(FGameplayAttribute Stat);
-	//UFUNCTION(BlueprintPure, Category = "Leveling") float GetXPCostForNextLevel() const;
+	UFUNCTION(BlueprintCallable, Category = "Leveling") bool TryLevelUpStat(FGameplayAttribute Stat);
+	UFUNCTION(BlueprintPure, Category = "Leveling") float GetXPCostForNextLevel() const;
 	
 	//----------------------------------------------------------------------------------//
 	//							Player movement & input
