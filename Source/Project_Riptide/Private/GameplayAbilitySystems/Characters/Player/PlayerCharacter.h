@@ -50,6 +50,7 @@ private:
 	//Player movement & look functions
 	void HandleLookInput(const struct FInputActionValue& InputActionValue);
 	void HandleMoveInput(const struct FInputActionValue& InputActionValue);
+	void HandleJumpInput(const struct FInputActionValue& InputActionValue);
 	
 	//Getters for movement
 	FVector GetRightDirection() const;
@@ -62,4 +63,5 @@ private:
 	//Input actions
 	UPROPERTY(EditDefaultsOnly, Category = "Input") class UInputAction* LookAction;
 	UPROPERTY(EditDefaultsOnly, Category = "Input") class UInputAction* MoveAction;
+	UPROPERTY(EditDefaultsOnly, Category = "Input") class UInputAction* JumpAction;
 };
