@@ -30,15 +30,12 @@ public:
 	//Camera Component
 	UPROPERTY(EditDefaultsOnly, Category = "Camera") TObjectPtr<class UCameraComponent> CameraComponent; //for component classes use the TObjectPtr - unreal preferred
 	
-<<<<<<< Updated upstream
 private:
-=======
 	//----------------------------------------------------------------------------------//
 	//							Player Progression and xp
 	//----------------------------------------------------------------------------------//
 	//UFUNCTION(BlueprintCallable, Category = "Leveling") bool TryLevelUpStat(FGameplayAttribute Stat);
 	//UFUNCTION(BlueprintPure, Category = "Leveling") float GetXPCostForNextLevel() const;
->>>>>>> Stashed changes
 	
 	//----------------------------------------------------------------------------------//
 	//							Player movement & input
