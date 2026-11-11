@@ -32,10 +32,24 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Camera") TObjectPtr<class UCameraComponent> CameraComponent; //for component classes use the TObjectPtr - unreal preferred
 	
 	//----------------------------------------------------------------------------------//
+	//										UI
+	//----------------------------------------------------------------------------------//
+public:
+	UPROPERTY(EditDefaultsOnly, Category = "UI") TSubclassOf<class UPlayerHUDWidget> PlayerHUDClass;
+	
+protected:
+	virtual void OnAbilitySystemInitialized() override;
+	
+private:
+	UPROPERTY() TObjectPtr<UPlayerHUDWidget> PlayerHUD;
+	
+	//----------------------------------------------------------------------------------//
 	//										Classes
 	//----------------------------------------------------------------------------------//
-
+	
+public:
 	UPROPERTY(EditDefaultsOnly, Category = "Abilities|Effects") TMap<ECharacterClass, TSubclassOf<UGameplayEffect>> ClassEffects;
+	
 protected:   
 	virtual TSubclassOf<UGameplayEffect> GetStatsEffect() const override;
 	
@@ -57,6 +71,13 @@ private:
 	void HandleLookInput(const struct FInputActionValue& InputActionValue);
 	void HandleMoveInput(const struct FInputActionValue& InputActionValue);
 	void HandleJumpInput(const struct FInputActionValue& InputActionValue);
+	
+	//Abilties inputs
+	UPROPERTY(EditDefaultsOnly, Category = "Input", meta = (Categories = "Input")) TMap<TObjectPtr<class UInputAction>, FGameplayTag> AbilityInputActions;
+
+	//Ability input pressed
+	void HandleAbilityInputPressed(FGameplayTag InputTag);
+	void HandleAbilityInputReleased(FGameplayTag InputTag);
 	
 	//Getters for movement
 	FVector GetRightDirection() const;

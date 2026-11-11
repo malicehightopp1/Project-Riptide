@@ -7,6 +7,7 @@
 #include "CharacterMovement/BaseMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameplayAbilitySystems/GameplayAbilities/CombatGameplayAbility.h"
 
 #pragma region Init Setup
 // Sets default values
@@ -54,6 +55,7 @@ void ABaseCharacter::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> EffectClass,
 
 void ABaseCharacter::OnDeath(AActor* Killer)
 {
+	UE_LOG(LogTemp, Warning, TEXT("[DEATH] BaseCharacter::OnDeath on %s, killer %s"), *GetName(), *GetNameSafe(Killer)); //TEMP
 	CombatAbilitySystemComponent->AddLooseGameplayTag(FGameplayTag::RequestGameplayTag(FName("State.Dead")));
 	GetCharacterMovement()->DisableMovement();
 }
@@ -79,6 +81,22 @@ void ABaseCharacter::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 	
 	InitAbilitySystem();
+}
+
+void ABaseCharacter::GrantStartupAbilities()
+{
+	if (!CombatAbilitySystemComponent) return;
+
+	for (const TSubclassOf<UCombatGameplayAbility>& AbilityClass : StartupAbilities)
+	{
+		if (!AbilityClass)
+		{
+			continue;
+		}
+
+		//Level 1, no input ID (we use input tags instead), this character as the source
+		CombatAbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(AbilityClass, 1, INDEX_NONE, this));
+	}
 }
 
 void ABaseCharacter::InitAbilitySystem()
@@ -118,8 +136,9 @@ void ABaseCharacter::ApplyStartupEffects()
 			CombatAttributeSet->GetMana(),    CombatAttributeSet->GetMaxMana()));
 	}
 	
+	GrantStartupAbilities();   
+	
 	OnAbilitySystemInitialized();
-
 }
 
 #pragma endregion On Possession

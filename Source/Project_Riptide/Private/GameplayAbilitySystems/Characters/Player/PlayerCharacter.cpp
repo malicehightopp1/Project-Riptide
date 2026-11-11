@@ -7,7 +7,9 @@
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameplayAbilitySystems/Widgets/PlayerHUDWidget.h"
 
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) //this super is required because the base class constructor has it as well
 {
@@ -22,6 +24,10 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
+	
+	//fixing camera rotation and allowing animations to work properly
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->RotationRate = FRotator(0.0f,720.0f,0.0f);
 	
 	//----------------------------------------------------------------------------------//
 	//									Camera Setup
@@ -48,21 +54,28 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 	CameraComponent->SetupAttachment(CameraBoom);
 }
 
-#pragma region Player Locomotion/Input Actions
-
-TSubclassOf<UGameplayEffect> APlayerCharacter::GetStatsEffect() const
+#pragma region Player UI
+void APlayerCharacter::OnAbilitySystemInitialized()
 {
-	//Warrior by default, so PIE straight into the open-world map still works
-	ECharacterClass ChosenClass = ECharacterClass::Warrior;
-	if (const UCombatGameInstance* GI = Cast<UCombatGameInstance>(GetGameInstance()))
+	Super::OnAbilitySystemInitialized();
+	
+	//Only the local player gets a HUD, and only once
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (!PC || !PC->IsLocalController() || !PlayerHUDClass || PlayerHUD)
 	{
-		ChosenClass = GI->SelectedClass;
+		return;
 	}
 
-	const TSubclassOf<UGameplayEffect>* ClassEffect = ClassEffects.Find(ChosenClass);
-	return ClassEffect ? *ClassEffect : nullptr;
+	PlayerHUD = CreateWidget<UPlayerHUDWidget>(PC, PlayerHUDClass);
+	if (PlayerHUD)
+	{
+		PlayerHUD->AddToViewport();
+		PlayerHUD->InitFromAbilitySystem(GetAbilitySystemComponent());
+	}
 }
+#pragma endregion 
 
+#pragma region Player Progression
 bool APlayerCharacter::TryLevelUpStat(FGameplayAttribute Stat)
 {
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
@@ -101,6 +114,24 @@ float APlayerCharacter::GetXPCostForNextLevel() const
 	}
 	return UCombatAttributeSet::GetXPCostForLevel(CombatAttributeSet->GetCharacterLevel());
 }
+#pragma endregion
+
+#pragma region Player Gameplay Effects
+TSubclassOf<UGameplayEffect> APlayerCharacter::GetStatsEffect() const
+{
+	//Warrior by default, so PIE straight into the open-world map still works
+	ECharacterClass ChosenClass = ECharacterClass::Warrior;
+	if (const UCombatGameInstance* GI = Cast<UCombatGameInstance>(GetGameInstance()))
+	{
+		ChosenClass = GI->SelectedClass;
+	}
+
+	const TSubclassOf<UGameplayEffect>* ClassEffect = ClassEffects.Find(ChosenClass);
+	return ClassEffect ? *ClassEffect : nullptr;
+}
+#pragma endregion
+
+#pragma region Player Locomotion/Input Actions
 
 void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
@@ -108,7 +139,6 @@ void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 	
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		
 		//Player Look
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::HandleLookInput);
 		
@@ -119,6 +149,33 @@ void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &APlayerCharacter::HandleJumpInput);
 
 		UE_LOG(LogTemp, Warning, TEXT("Input Actions Have been binded!"))
+		
+		//For input binding of the abilties
+		for (const TPair<TObjectPtr<UInputAction>, FGameplayTag>& AbilityInput : AbilityInputActions)
+		{
+			if (!AbilityInput.Key)
+			{
+				continue;
+			}
+
+			EnhancedInputComponent->BindAction(AbilityInput.Key.Get(), ETriggerEvent::Started,   this, &APlayerCharacter::HandleAbilityInputPressed,  AbilityInput.Value);
+			EnhancedInputComponent->BindAction(AbilityInput.Key.Get(), ETriggerEvent::Completed, this, &APlayerCharacter::HandleAbilityInputReleased, AbilityInput.Value);
+		}
+	}
+}
+void APlayerCharacter::HandleAbilityInputPressed(FGameplayTag InputTag)
+{
+	if (CombatAbilitySystemComponent)
+	{
+		CombatAbilitySystemComponent->AbilityInputTagPressed(InputTag);
+	}
+}
+
+void APlayerCharacter::HandleAbilityInputReleased(FGameplayTag InputTag)
+{
+	if (CombatAbilitySystemComponent)
+	{
+		CombatAbilitySystemComponent->AbilityInputTagReleased(InputTag);
 	}
 }
 

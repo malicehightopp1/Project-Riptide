@@ -66,6 +66,8 @@ void UCombatAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffect
 		const float Damage = GetIncomingDamage();
 		SetIncomingDamage(0.0f); //consumes damage and reset it
 		
+		UE_LOG(LogTemp, Warning, TEXT("[GAS] IncomingDamage %.0f -> Health was %.0f"), Damage, GetHealth()); //TEMP
+		
 		if (Damage <= 0.0f)
 		{
 			return;
@@ -101,6 +103,7 @@ float UCombatAttributeSet::GetXPCostForLevel(float CurrentLevel)
 
 void UCombatAttributeSet::HandleDeath(const FGameplayEffectModCallbackData& Data)
 {
+	UE_LOG(LogTemp, Warning, TEXT("[DEATH] HandleDeath on %s | XPReward %.0f"), *GetNameSafe(GetOwningActor()), GetXPReward()); //TEMP
 	const FGameplayEffectContextHandle Context = Data.EffectSpec.GetContext();
 	AActor* Killer = Context.GetOriginalInstigator();
 
@@ -114,6 +117,6 @@ void UCombatAttributeSet::HandleDeath(const FGameplayEffectModCallbackData& Data
 
 	if (ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwningActor()))
 	{
-		//OwnerCharacter->OnDeath(Killer);
+		OwnerCharacter->OnDeath(Killer);
 	}
 }

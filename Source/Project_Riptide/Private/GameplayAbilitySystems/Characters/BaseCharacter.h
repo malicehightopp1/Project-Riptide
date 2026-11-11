@@ -29,8 +29,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Abilities") float StartupEffectLevel = 1.0f;
 	UPROPERTY(EditDefaultsOnly, Category = "Abilities") TSubclassOf<UGameplayEffect> RefillVitalsEffect;
 
-
+	//Abilities to start with
+	UPROPERTY(EditDefaultsOnly, Category = "Abilities") TArray<TSubclassOf<class UCombatGameplayAbility>> StartupAbilities;
+	
+	//applying effects
 	void ApplyEffectToSelf(TSubclassOf<UGameplayEffect> EffectClass, float Level = 1.0f);
+	
+	//death stat handling
 	virtual void OnDeath(AActor* Killer);
 	//----------------------------------------------------------------------------------//
 	//									Player movement
@@ -50,6 +55,9 @@ protected:
 	virtual void BeginPlay() override; // Called when the game starts or when spawned
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
+	
+	//Startup abilities
+	void GrantStartupAbilities();
 	
 	//Ability setup
 	void InitAbilitySystem();

@@ -19,4 +19,9 @@ namespace CombatTags
 	UE_DEFINE_GAMEPLAY_TAG(Affinity_Wind, "Affinity.Wind");
 	UE_DEFINE_GAMEPLAY_TAG(Affinity_Lightning, "Affinity.Lightning");
 	UE_DEFINE_GAMEPLAY_TAG(Affinity_Water, "Affinity.Water");
+	
+	UE_DEFINE_GAMEPLAY_TAG(Input_Attack_Light, "Input.Attack.Light");
+	UE_DEFINE_GAMEPLAY_TAG(Input_Attack_Heavy, "Input.Attack.Heavy");
+	UE_DEFINE_GAMEPLAY_TAG(Input_Dodge, "Input.Dodge");
+	UE_DEFINE_GAMEPLAY_TAG(Input_Power, "Input.Power");
 }
