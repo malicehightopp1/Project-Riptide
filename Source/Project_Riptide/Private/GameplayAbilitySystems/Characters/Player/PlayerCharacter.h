@@ -106,4 +106,5 @@ private:
 	//Input actions
 	UPROPERTY(EditDefaultsOnly, Category = "Input") class UInputAction* LookAction;
 	UPROPERTY(EditDefaultsOnly, Category = "Input") class UInputAction* MoveAction;
+	UPROPERTY(EditDefaultsOnly, Category = "Input") class UInputAction* JumpAction;
 };
