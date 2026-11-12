@@ -87,6 +87,7 @@ private:
 	//Player movement & look functions
 	void HandleLookInput(const struct FInputActionValue& InputActionValue);
 	void HandleMoveInput(const struct FInputActionValue& InputActionValue);
+	void HandleJumpInput(const struct FInputActionValue& InputActionValue);
 	
 	//Abilties inputs
 	UPROPERTY(EditDefaultsOnly, Category = "Input", meta = (Categories = "Input")) TMap<TObjectPtr<class UInputAction>, FGameplayTag> AbilityInputActions;
