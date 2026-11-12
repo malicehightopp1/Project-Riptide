@@ -68,7 +68,8 @@ public:
 	ATTRIBUTE_ACCESSORS(UCombatAttributeSet, XP)
 	UPROPERTY(BlueprintReadOnly, Category = "AttributeSets  | Stats") FGameplayAttributeData XPReward;
 	ATTRIBUTE_ACCESSORS(UCombatAttributeSet, XPReward)
-	
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes|Progression") FGameplayAttributeData StatPoints;
+	ATTRIBUTE_ACCESSORS(UCombatAttributeSet, StatPoints)
 	//----------------------------------------------------------------------------------//
 	//									Combat Multipliers
 	//----------------------------------------------------------------------------------//

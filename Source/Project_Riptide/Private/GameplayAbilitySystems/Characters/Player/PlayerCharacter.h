@@ -36,12 +36,15 @@ public:
 	//----------------------------------------------------------------------------------//
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "UI") TSubclassOf<class UPlayerHUDWidget> PlayerHUDClass;
-	
+	void ToggleStatsMenu();
 protected:
 	virtual void OnAbilitySystemInitialized() override;
 	
 private:
 	UPROPERTY() TObjectPtr<UPlayerHUDWidget> PlayerHUD;
+	
+	//Stats menu
+	bool bStatsMenuOpen = false;
 	
 	//----------------------------------------------------------------------------------//
 	//										Classes
@@ -50,15 +53,29 @@ private:
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "Abilities|Effects") TMap<ECharacterClass, TSubclassOf<UGameplayEffect>> ClassEffects;
 	
+	UPROPERTY(EditDefaultsOnly, Category = "UI") TSubclassOf<class UStatsMenuWidget> StatsMenuClass;
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "Input") class UInputAction* StatsMenuAction;
+	void HandleStatsMenuInput(const struct FInputActionValue& InputActionValue);
+	
+	UPROPERTY() TObjectPtr<UStatsMenuWidget> StatsMenu;
 protected:   
 	virtual TSubclassOf<UGameplayEffect> GetStatsEffect() const override;
 	
-private:
 	//----------------------------------------------------------------------------------//
 	//							Player Progression and xp
 	//----------------------------------------------------------------------------------//
-	UFUNCTION(BlueprintCallable, Category = "Leveling") bool TryLevelUpStat(FGameplayAttribute Stat);
+public:
+	UFUNCTION(BlueprintCallable, Category = "Leveling") bool TrySpendStatPoint(FGameplayAttribute Stat);
 	UFUNCTION(BlueprintPure, Category = "Leveling") float GetXPCostForNextLevel() const;
+	
+	//Stat points you get each time you level up
+	UPROPERTY(EditDefaultsOnly, Category = "Leveling") float StatPointsPerLevel = 1.0f;
+
+private:
+	void HandleXPChanged(const FOnAttributeChangeData& Data);
+	void CheckForLevelUp();
+	bool bIsLevelingUp = false; //stops CheckForLevelUp from running inside itself
 	
 	//----------------------------------------------------------------------------------//
 	//							Player movement & input

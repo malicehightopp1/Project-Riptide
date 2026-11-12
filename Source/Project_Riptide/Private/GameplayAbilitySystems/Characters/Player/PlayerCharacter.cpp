@@ -10,6 +10,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameplayAbilitySystems/Widgets/PlayerHUDWidget.h"
+#include "GameplayAbilitySystems/Widgets/StatsMenuWidget.h"
 
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) //this super is required because the base class constructor has it as well
 {
@@ -55,9 +56,55 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 }
 
 #pragma region Player UI
+void APlayerCharacter::ToggleStatsMenu()
+{
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (!PC || !StatsMenuClass)
+	{
+		return;
+	}
+	
+	//Make the menu the first time it's opened
+	if (!StatsMenu)
+	{
+		StatsMenu = CreateWidget<UStatsMenuWidget>(PC, StatsMenuClass);
+	}
+	if (!StatsMenu)
+	{
+		return;
+	}
+	
+	if (bStatsMenuOpen)
+	{
+		//Close - back to playing
+		StatsMenu->RemoveFromParent();
+		PC->SetInputMode(FInputModeGameOnly());
+		PC->SetShowMouseCursor(false);
+		PC->SetIgnoreLookInput(false);
+		bStatsMenuOpen = false;
+	}
+	else
+	{
+		//Open - menu gets focus so it can catch Tab/Escape to close
+		StatsMenu->AddToViewport();
+		StatsMenu->RefreshMenu();
+		
+		FInputModeGameAndUI InputMode;
+		InputMode.SetWidgetToFocus(StatsMenu->TakeWidget());
+		InputMode.SetHideCursorDuringCapture(false);
+		PC->SetInputMode(InputMode);
+		PC->SetShowMouseCursor(true);
+		PC->SetIgnoreLookInput(true);
+		bStatsMenuOpen = true;
+	}
+}
+
 void APlayerCharacter::OnAbilitySystemInitialized()
 {
 	Super::OnAbilitySystemInitialized();
+	CombatAbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(UCombatAttributeSet::GetXPAttribute()).AddUObject(this, &APlayerCharacter::HandleXPChanged);
+	
+	CombatAttributeSet->SetXP(1000.0f); //for testing XP
 	
 	//Only the local player gets a HUD, and only once
 	APlayerController* PC = Cast<APlayerController>(GetController());
@@ -76,35 +123,6 @@ void APlayerCharacter::OnAbilitySystemInitialized()
 #pragma endregion 
 
 #pragma region Player Progression
-bool APlayerCharacter::TryLevelUpStat(FGameplayAttribute Stat)
-{
-	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
-	if (!ASC || !CombatAttributeSet)
-	{
-		return false;
-	}
-
-	//Only the three spendable stats
-	const bool bIsSpendableStat = Stat == UCombatAttributeSet::GetVitalityAttribute() || Stat == UCombatAttributeSet::GetEnduranceAttribute() || Stat == UCombatAttributeSet::GetMindAttribute();
-	if (!bIsSpendableStat)
-	{
-		return false;
-	}
-
-	const float Cost = GetXPCostForNextLevel();
-	const float CurrentXP = ASC->GetNumericAttributeBase(UCombatAttributeSet::GetXPAttribute());
-	if (CurrentXP < Cost)
-	{
-		return false;
-	}
-
-	const FGameplayAttribute LevelAttr = UCombatAttributeSet::GetCharacterLevelAttribute();
-
-	ASC->SetNumericAttributeBase(UCombatAttributeSet::GetXPAttribute(), CurrentXP - Cost);
-	ASC->SetNumericAttributeBase(Stat, ASC->GetNumericAttributeBase(Stat) + 1.0f);
-	ASC->SetNumericAttributeBase(LevelAttr, ASC->GetNumericAttributeBase(LevelAttr) + 1.0f);
-	return true;
-}
 
 float APlayerCharacter::GetXPCostForNextLevel() const
 {
@@ -114,9 +132,61 @@ float APlayerCharacter::GetXPCostForNextLevel() const
 	}
 	return UCombatAttributeSet::GetXPCostForLevel(CombatAttributeSet->GetCharacterLevel());
 }
+
+void APlayerCharacter::HandleXPChanged(const FOnAttributeChangeData& Data)
+{
+	CheckForLevelUp();
+}
+
+void APlayerCharacter::CheckForLevelUp()
+{
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+	if (!ASC || bIsLevelingUp)
+	{
+		return;
+	}
+	bIsLevelingUp = true; //changing XP below fires HandleXPChanged again - this ignores it
+	
+	const FGameplayAttribute XPAttr = UCombatAttributeSet::GetXPAttribute();
+	const FGameplayAttribute LevelAttr = UCombatAttributeSet::GetCharacterLevelAttribute();
+	const FGameplayAttribute PointsAttr = UCombatAttributeSet::GetStatPointsAttribute();
+	
+	float XP = ASC->GetNumericAttributeBase(XPAttr);
+	float Cost = GetXPCostForNextLevel();
+	bool bLeveledUp = false;
+	
+	//Keep leveling while there's enough XP (a big kill can give more than one level)
+	while (Cost > 0.0f && XP >= Cost)
+	{
+		XP -= Cost;
+		ASC->SetNumericAttributeBase(LevelAttr, ASC->GetNumericAttributeBase(LevelAttr) + 1.0f);
+		ASC->SetNumericAttributeBase(PointsAttr, ASC->GetNumericAttributeBase(PointsAttr) + StatPointsPerLevel);
+		Cost = GetXPCostForNextLevel(); //new level = new cost
+		bLeveledUp = true;
+	}
+	
+	//Leftover XP carries over
+	if (bLeveledUp)
+	{
+		ASC->SetNumericAttributeBase(XPAttr, XP);
+	}
+	
+	bIsLevelingUp = false;
+	
+	//If the menu is open, show the new numbers
+	if (bLeveledUp && bStatsMenuOpen && StatsMenu)
+	{
+		StatsMenu->RefreshMenu();
+	}
+}
 #pragma endregion
 
 #pragma region Player Gameplay Effects
+void APlayerCharacter::HandleStatsMenuInput(const struct FInputActionValue& InputActionValue)
+{
+	ToggleStatsMenu();
+}
+
 TSubclassOf<UGameplayEffect> APlayerCharacter::GetStatsEffect() const
 {
 	//Warrior by default, so PIE straight into the open-world map still works
@@ -128,6 +198,34 @@ TSubclassOf<UGameplayEffect> APlayerCharacter::GetStatsEffect() const
 
 	const TSubclassOf<UGameplayEffect>* ClassEffect = ClassEffects.Find(ChosenClass);
 	return ClassEffect ? *ClassEffect : nullptr;
+}
+
+bool APlayerCharacter::TrySpendStatPoint(FGameplayAttribute Stat)
+{
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+	if (!ASC)
+	{
+		return false;
+	}
+	
+	//Only the three spendable stats
+	const bool bIsSpendableStat = Stat == UCombatAttributeSet::GetVitalityAttribute() || Stat == UCombatAttributeSet::GetEnduranceAttribute() || Stat == UCombatAttributeSet::GetMindAttribute();
+	if (!bIsSpendableStat)
+	{
+		return false;
+	}
+	
+	//Need at least 1 point
+	const float Points = ASC->GetNumericAttributeBase(UCombatAttributeSet::GetStatPointsAttribute());
+	if (Points < 1.0f)
+	{
+		return false;
+	}
+	
+	//-1 point, +1 stat
+	ASC->SetNumericAttributeBase(UCombatAttributeSet::GetStatPointsAttribute(), Points - 1.0f);
+	ASC->SetNumericAttributeBase(Stat, ASC->GetNumericAttributeBase(Stat) + 1.0f);
+	return true;
 }
 #pragma endregion
 
@@ -147,6 +245,12 @@ void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 
 		//Player Jump
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &APlayerCharacter::HandleJumpInput);
+		//Make sure exists first
+		if (StatsMenuAction)
+		{
+			EnhancedInputComponent->BindAction(StatsMenuAction, ETriggerEvent::Started, this, &APlayerCharacter::HandleStatsMenuInput);
+			UE_LOG(LogTemp,Warning,TEXT("Stats menu action has been binded"))
+		}
 
 		UE_LOG(LogTemp, Warning, TEXT("Input Actions Have been binded!"))
 		
@@ -157,7 +261,6 @@ void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 			{
 				continue;
 			}
-
 			EnhancedInputComponent->BindAction(AbilityInput.Key.Get(), ETriggerEvent::Started,   this, &APlayerCharacter::HandleAbilityInputPressed,  AbilityInput.Value);
 			EnhancedInputComponent->BindAction(AbilityInput.Key.Get(), ETriggerEvent::Completed, this, &APlayerCharacter::HandleAbilityInputReleased, AbilityInput.Value);
 		}
@@ -165,6 +268,10 @@ void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 }
 void APlayerCharacter::HandleAbilityInputPressed(FGameplayTag InputTag)
 {
+	if (bStatsMenuOpen)
+	{
+		return;
+	}
 	if (CombatAbilitySystemComponent)
 	{
 		CombatAbilitySystemComponent->AbilityInputTagPressed(InputTag);

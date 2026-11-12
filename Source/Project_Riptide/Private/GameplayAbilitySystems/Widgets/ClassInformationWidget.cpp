@@ -90,10 +90,7 @@ void UClassInformationWidget::RefreshCard()
 	//						Stats (read from the class GE)
 	//----------------------------------------------------------------------------------//
 	
-	const FString Stats = FString::Printf(TEXT("Vitality: %.0f\nEndurance: %.0f\nMind: %.0f"),
-		GetStartingStat(UCombatAttributeSet::GetVitalityAttribute()),
-		GetStartingStat(UCombatAttributeSet::GetEnduranceAttribute()),
-		GetStartingStat(UCombatAttributeSet::GetMindAttribute()));
+	const FString Stats = FString::Printf(TEXT("Vitality: %.0f\nEndurance: %.0f\nMind: %.0f"),GetStartingStat(UCombatAttributeSet::GetVitalityAttribute()),GetStartingStat(UCombatAttributeSet::GetEnduranceAttribute()),GetStartingStat(UCombatAttributeSet::GetMindAttribute()));
 	
 	StatsText->SetText(FText::FromString(Stats));
 	
