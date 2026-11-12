@@ -4,6 +4,7 @@
 #include "GameplayAbilitySystems/AttributeSets/CombatAttributeSet.h"
 
 #include "GameplayEffectExtension.h"
+#include "GameplayAbilitySystems/Characters/BaseCharacter.h"
 
 UCombatAttributeSet::UCombatAttributeSet()
 {
@@ -65,6 +66,8 @@ void UCombatAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffect
 		const float Damage = GetIncomingDamage();
 		SetIncomingDamage(0.0f); //consumes damage and reset it
 		
+		UE_LOG(LogTemp, Warning, TEXT("[GAS] IncomingDamage %.0f -> Health was %.0f"), Damage, GetHealth()); //TEMP
+		
 		if (Damage <= 0.0f)
 		{
 			return;
@@ -73,9 +76,10 @@ void UCombatAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffect
 		const float NewHealth = FMath::Clamp(OldHealth - Damage, 0.0f, GetMaxHealth());
 		SetHealth(NewHealth);
 		
+		//Player death called
 		if (OldHealth > 0.0f && NewHealth <= 0.0f)
 		{
-			//HandleDeath();
+			HandleDeath(Data);
 		}
 	}
 	else if (Attribute == GetHealthAttribute())
@@ -95,4 +99,24 @@ void UCombatAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffect
 float UCombatAttributeSet::GetXPCostForLevel(float CurrentLevel)
 {
 	return FMath::FloorToFloat(2.0f * FMath::Pow(CurrentLevel, 2.3f) + 84.0f);
+}
+
+void UCombatAttributeSet::HandleDeath(const FGameplayEffectModCallbackData& Data)
+{
+	UE_LOG(LogTemp, Warning, TEXT("[DEATH] HandleDeath on %s | XPReward %.0f"), *GetNameSafe(GetOwningActor()), GetXPReward()); //TEMP
+	const FGameplayEffectContextHandle Context = Data.EffectSpec.GetContext();
+	AActor* Killer = Context.GetOriginalInstigator();
+
+	//Pay this character's XPReward to whoever killed it
+	UAbilitySystemComponent* KillerASC = Context.GetOriginalInstigatorAbilitySystemComponent();
+	if (KillerASC && KillerASC != GetOwningAbilitySystemComponent() && KillerASC->HasAttributeSetForAttribute(GetXPAttribute()) && GetXPReward() > 0.0f)
+	{
+		const float KillerXP = KillerASC->GetNumericAttributeBase(GetXPAttribute());
+		KillerASC->SetNumericAttributeBase(GetXPAttribute(), KillerXP + GetXPReward());
+	}
+
+	if (ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwningActor()))
+	{
+		OwnerCharacter->OnDeath(Killer);
+	}
 }

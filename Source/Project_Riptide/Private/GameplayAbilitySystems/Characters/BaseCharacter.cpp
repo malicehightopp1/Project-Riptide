@@ -7,6 +7,7 @@
 #include "CharacterMovement/BaseMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameplayAbilitySystems/GameplayAbilities/CombatGameplayAbility.h"
 
 #pragma region Init Setup
 // Sets default values
@@ -21,6 +22,7 @@ ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer) : Su
 	
 	//Ability system Component
 	CombatAbilitySystemComponent = CreateDefaultSubobject<UCombatAbilitysystemComponent>(TEXT("CombatAbilitySystemComponent"));
+	CombatAttributeSet = CreateDefaultSubobject<UCombatAttributeSet>(TEXT("CombatAttributeSet"));
 	
 	//----------------------------------------------------------------------------------//
 	//									Movement Setup
@@ -32,6 +34,30 @@ ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer) : Su
 	
 	//Initial Capsule size
 	GetCapsuleComponent()->InitCapsuleSize(CapsuleInitWidth,CapsuleInitHeight);
+}
+
+void ABaseCharacter::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> EffectClass, float Level)
+{
+	if (!EffectClass || !CombatAbilitySystemComponent)
+	{
+		return;
+	}
+
+	FGameplayEffectContextHandle Context = CombatAbilitySystemComponent->MakeEffectContext();
+	Context.AddSourceObject(this);
+
+	const FGameplayEffectSpecHandle Spec = CombatAbilitySystemComponent->MakeOutgoingSpec(EffectClass, Level, Context);
+	if (Spec.IsValid())
+	{
+		CombatAbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
+	}
+}
+
+void ABaseCharacter::OnDeath(AActor* Killer)
+{
+	UE_LOG(LogTemp, Warning, TEXT("[DEATH] BaseCharacter::OnDeath on %s, killer %s"), *GetName(), *GetNameSafe(Killer)); //TEMP
+	CombatAbilitySystemComponent->AddLooseGameplayTag(FGameplayTag::RequestGameplayTag(FName("State.Dead")));
+	GetCharacterMovement()->DisableMovement();
 }
 
 // Called when the game starts or when spawned
@@ -47,21 +73,72 @@ void ABaseCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 	
-	//NOTE: this is for initting the abilties and actor info, the owner and the avatar
-	if (CombatAbilitySystemComponent)
-	{
-		CombatAbilitySystemComponent->InitAbilityActorInfo(this, this);
-	}
+	InitAbilitySystem();
 }
 
 void ABaseCharacter::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
 	
-	if (CombatAbilitySystemComponent)
+	InitAbilitySystem();
+}
+
+void ABaseCharacter::GrantStartupAbilities()
+{
+	if (!CombatAbilitySystemComponent) return;
+
+	for (const TSubclassOf<UCombatGameplayAbility>& AbilityClass : StartupAbilities)
 	{
-		CombatAbilitySystemComponent->InitAbilityActorInfo(this, this);
+		if (!AbilityClass)
+		{
+			continue;
+		}
+
+		//Level 1, no input ID (we use input tags instead), this character as the source
+		CombatAbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(AbilityClass, 1, INDEX_NONE, this));
 	}
+}
+
+void ABaseCharacter::InitAbilitySystem()
+{
+	if (!CombatAbilitySystemComponent) return;
+
+	UE_LOG(LogTemp, Warning, TEXT("InitAbilitySystem called on %s"), *GetName());
+	
+	//NOTE: this is for initting the abilties and actor info, the owner and the avatar
+	CombatAbilitySystemComponent->InitAbilityActorInfo(this, this);
+
+	if (HasAuthority())
+	{
+		ApplyStartupEffects();
+	}
+}
+
+void ABaseCharacter::ApplyStartupEffects()
+{
+	if (bStartupEffectsApplied || !CombatAbilitySystemComponent)
+	{
+		return;
+	}
+	
+	bStartupEffectsApplied = true;
+
+	ApplyEffectToSelf(GetStatsEffect(), StartupEffectLevel); //1. class stats (GE_Warrior)
+	ApplyEffectToSelf(StartupEffects, StartupEffectLevel); //2. derived stats (GE_StatSetup)
+	ApplyEffectToSelf(RefillVitalsEffect); //3. fill pools (GE_RefillStats)
+
+	if (GEngine && CombatAttributeSet)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, FString::Printf(
+			TEXT("HP %.0f / %.0f   |   Stamina %.0f / %.0f   |   Mana %.0f / %.0f"),
+			CombatAttributeSet->GetHealth(),  CombatAttributeSet->GetMaxHealth(),
+			CombatAttributeSet->GetStamina(), CombatAttributeSet->GetMaxStamina(),
+			CombatAttributeSet->GetMana(),    CombatAttributeSet->GetMaxMana()));
+	}
+	
+	GrantStartupAbilities();   
+	
+	OnAbilitySystemInitialized();
 }
 
 #pragma endregion On Possession
