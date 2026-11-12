@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayAbilitySystems/Characters/BaseCharacter.h"
-#include "GameplayAbilitySystems/GameInstances/CombatGameInstance.h"
+#include "GameplayAbilitySystems/GameControllers/CombatGameInstance.h"
 #include "PlayerCharacter.generated.h"
 
 /**

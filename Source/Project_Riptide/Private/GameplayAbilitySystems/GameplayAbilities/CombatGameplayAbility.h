@@ -17,4 +17,6 @@ class UCombatGameplayAbility : public UGameplayAbility
 	
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "Input", meta = (Categories = "Input")) FGameplayTag InputTag;
+	
+	UFUNCTION(BlueprintCallable, Category = "Damage") void ApplyDamageToTarget(AActor* TargetActor, float BaseDamage, bool bIsPowerDamage = false, UPARAM(meta = (Categories = "Affinity")) FGameplayTag AffinityTag = FGameplayTag());
 };

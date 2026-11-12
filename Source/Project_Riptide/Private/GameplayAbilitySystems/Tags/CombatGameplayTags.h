@@ -28,4 +28,7 @@ namespace CombatTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Attack_Heavy);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Dodge);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Power);
+	
+	//Data
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_Damage);
 }

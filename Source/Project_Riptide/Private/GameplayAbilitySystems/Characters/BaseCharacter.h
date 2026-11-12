@@ -28,6 +28,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Abilities") TSubclassOf<UGameplayEffect> StartupEffects;
 	UPROPERTY(EditAnywhere, Category = "Abilities") float StartupEffectLevel = 1.0f;
 	UPROPERTY(EditDefaultsOnly, Category = "Abilities") TSubclassOf<UGameplayEffect> RefillVitalsEffect;
+	
+	//Damage Effect
+	UPROPERTY(EditDefaultsOnly, Category = "Abilities|Effects") TSubclassOf<UGameplayEffect> DamageEffect;
 
 	//Abilities to start with
 	UPROPERTY(EditDefaultsOnly, Category = "Abilities") TArray<TSubclassOf<class UCombatGameplayAbility>> StartupAbilities;

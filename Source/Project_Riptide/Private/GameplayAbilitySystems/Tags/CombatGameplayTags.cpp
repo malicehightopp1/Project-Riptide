@@ -24,4 +24,6 @@ namespace CombatTags
 	UE_DEFINE_GAMEPLAY_TAG(Input_Attack_Heavy, "Input.Attack.Heavy");
 	UE_DEFINE_GAMEPLAY_TAG(Input_Dodge, "Input.Dodge");
 	UE_DEFINE_GAMEPLAY_TAG(Input_Power, "Input.Power");
+	
+	UE_DEFINE_GAMEPLAY_TAG(Data_Damage, "Data.Damage");
 }

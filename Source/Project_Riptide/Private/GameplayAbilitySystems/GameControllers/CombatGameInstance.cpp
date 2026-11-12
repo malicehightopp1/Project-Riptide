@@ -1,5 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "GameplayAbilitySystems/GameInstances/CombatGameInstance.h"
+#include "GameplayAbilitySystems/GameControllers/CombatGameInstance.h"
 

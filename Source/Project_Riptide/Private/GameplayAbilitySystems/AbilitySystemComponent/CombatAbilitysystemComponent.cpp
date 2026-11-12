@@ -2,7 +2,9 @@
 
 
 #include "GameplayAbilitySystems/AbilitySystemComponent/CombatAbilitysystemComponent.h"
-
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
+#include "GameplayEffect.h"
 #include "GameplayAbilitySystems/GameplayAbilities/CombatGameplayAbility.h"
 
 void UCombatAbilitysystemComponent::AbilityInputTagPressed(const FGameplayTag& InputTag)

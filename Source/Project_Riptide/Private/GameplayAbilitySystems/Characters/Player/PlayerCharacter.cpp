@@ -185,6 +185,10 @@ void APlayerCharacter::BeginPlay()
 	
 	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
+		//Set input mode on spawn pretty much
+		PC->SetInputMode(FInputModeGameOnly());
+		PC->SetShowMouseCursor(false);
+		
 		if (ULocalPlayer* LocalPlayer = PC->GetLocalPlayer())
 		{
 			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
