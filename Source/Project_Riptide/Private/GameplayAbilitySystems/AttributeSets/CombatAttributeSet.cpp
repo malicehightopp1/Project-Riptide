@@ -21,18 +21,31 @@ void UCombatAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute
 {
 	Super::PreAttributeChange(Attribute, NewValue);
 	
-	//Clamping the values between 0 and 1
-	if (Attribute == GetHealthAttribute())
+	UAbilitySystemComponent* ASC = GetOwningAbilitySystemComponent();
+	if (!ASC)
 	{
-		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxHealth());
+		return;
 	}
-	else if (Attribute == GetStaminaAttribute())
+
+	auto ClampToNewMax = [ASC](const FGameplayAttribute& CurrentAttr, float CurrentValue, float NewMax)
 	{
-		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxStamina());
+		if (CurrentValue > NewMax)
+		{
+			ASC->ApplyModToAttribute(CurrentAttr, EGameplayModOp::Override, NewMax);
+		}
+	};
+
+	if (Attribute == GetMaxHealthAttribute())
+	{
+		ClampToNewMax(GetHealthAttribute(),GetHealth(),NewValue);
 	}
-	else if (Attribute == GetManaAttribute())
+	else if (Attribute == GetMaxStaminaAttribute())
 	{
-		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxMana());
+		ClampToNewMax(GetStaminaAttribute(),GetStamina(),NewValue);
+	}
+	else if (Attribute == GetMaxManaAttribute())
+	{
+		ClampToNewMax(GetManaAttribute(),GetMana(),NewValue);
 	}
 }
 

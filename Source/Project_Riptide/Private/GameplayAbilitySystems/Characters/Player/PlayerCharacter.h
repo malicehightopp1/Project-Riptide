@@ -80,9 +80,11 @@ private:
 	//----------------------------------------------------------------------------------//
 	//							Player movement & input
 	//----------------------------------------------------------------------------------//
+protected:
+	virtual void NotifyControllerChanged() override; //begin play can fail to set the inputs so its better to put it in here
 	
+private:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;	// Called to bind functionality to input
-	virtual void BeginPlay() override;
 
 	//Player movement & look functions
 	void HandleLookInput(const struct FInputActionValue& InputActionValue);

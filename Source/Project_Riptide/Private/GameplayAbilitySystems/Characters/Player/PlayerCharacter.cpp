@@ -23,7 +23,7 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 	
 	//Setting rotation settings
 	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = true;
+	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 	
 	//fixing camera rotation and allowing animations to work properly
@@ -231,6 +231,22 @@ bool APlayerCharacter::TrySpendStatPoint(FGameplayAttribute Stat)
 
 #pragma region Player Locomotion/Input Actions
 
+void APlayerCharacter::NotifyControllerChanged()
+{
+	Super::NotifyControllerChanged();
+
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		PC->SetInputMode(FInputModeGameOnly());
+		PC->SetShowMouseCursor(false);
+
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(PlayerInputMappingContext, 0);
+		}
+	}
+}
+
 void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -286,26 +302,6 @@ void APlayerCharacter::HandleAbilityInputReleased(FGameplayTag InputTag)
 	}
 }
 
-void APlayerCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-	
-	if (APlayerController* PC = Cast<APlayerController>(GetController()))
-	{
-		//Set input mode on spawn pretty much
-		PC->SetInputMode(FInputModeGameOnly());
-		PC->SetShowMouseCursor(false);
-		
-		if (ULocalPlayer* LocalPlayer = PC->GetLocalPlayer())
-		{
-			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
-			{
-				Subsystem->AddMappingContext(PlayerInputMappingContext, 0);
-			}
-		}
-	}
-}
-
 void APlayerCharacter::HandleLookInput(const struct FInputActionValue& InputActionValue)
 {
 	FVector2D InputAction = InputActionValue.Get<FVector2D>(); //grabbing the input value from the mouse and right stick (Look input)
@@ -319,7 +315,10 @@ void APlayerCharacter::HandleMoveInput(const struct FInputActionValue& InputActi
 {
 	FVector2D InputAction = InputActionValue.Get<FVector2D>(); //grabs the X and Y values which represent movement directions
 	
-	InputAction.Normalize(); //this makes sure every direction movement is the same speed
+	if (InputAction.SizeSquared() > 1.0f)
+	{
+		InputAction.Normalize();
+	}
 	
 	//This handles all movement and allows the player to move diagnally
 	AddMovementInput(GetMoveFWDdirection()* InputAction.Y + GetRightDirection() * InputAction.X);
