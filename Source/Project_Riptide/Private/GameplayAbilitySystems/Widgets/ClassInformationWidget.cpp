@@ -52,10 +52,6 @@ void UClassInformationWidget::RefreshCard()
 		return;
 	}
 	
-	//----------------------------------------------------------------------------------//
-	//						Name + description (from the design doc)
-	//----------------------------------------------------------------------------------//
-	
 	FString ClassName;
 	FString Description;
 	

@@ -8,6 +8,8 @@ namespace CombatTags
 {
 	//States
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Dead);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Attacking);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Melee_Hit);
 	
 	//Classes
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Class_Warrior);
@@ -31,4 +33,7 @@ namespace CombatTags
 	
 	//Data
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_Damage);
+	
+	//Events
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Melee_Hit);
 }

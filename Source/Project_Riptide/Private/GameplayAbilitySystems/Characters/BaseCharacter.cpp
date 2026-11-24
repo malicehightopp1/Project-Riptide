@@ -7,7 +7,9 @@
 #include "CharacterMovement/BaseMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameplayAbilitySystems/Components/MeleeHitBoxComponent.h"
 #include "GameplayAbilitySystems/GameplayAbilities/CombatGameplayAbility.h"
+#include "GameplayAbilitySystems/Tags/CombatGameplayTags.h"
 
 #pragma region Init Setup
 // Sets default values
@@ -34,6 +36,8 @@ ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer) : Su
 	
 	//Initial Capsule size
 	GetCapsuleComponent()->InitCapsuleSize(CapsuleInitWidth,CapsuleInitHeight);
+	
+	MeleeHitbox = CreateDefaultSubobject<UMeleeHitBoxComponent>(TEXT("MeleeHitbox"));
 }
 
 void ABaseCharacter::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> EffectClass, float Level)
@@ -55,8 +59,15 @@ void ABaseCharacter::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> EffectClass,
 
 void ABaseCharacter::OnDeath(AActor* Killer)
 {
-	UE_LOG(LogTemp, Warning, TEXT("[DEATH] BaseCharacter::OnDeath on %s, killer %s"), *GetName(), *GetNameSafe(Killer)); //TEMP
-	CombatAbilitySystemComponent->AddLooseGameplayTag(FGameplayTag::RequestGameplayTag(FName("State.Dead")));
+	if (!CombatAbilitySystemComponent || CombatAbilitySystemComponent->HasMatchingGameplayTag(CombatTags::State_Dead))
+	{
+		return; //already dead
+	}
+
+	CombatAbilitySystemComponent->CancelAllAbilities();
+	CombatAbilitySystemComponent->AddLooseGameplayTag(CombatTags::State_Dead);
+
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCharacterMovement()->DisableMovement();
 }
 
@@ -65,6 +76,10 @@ void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	if (MeleeHitbox)
+	{
+		MeleeHitbox->SetTraceSource(GetMesh()); //sockets live on the character mesh for now
+	}
 }
 #pragma endregion Init Setup
 

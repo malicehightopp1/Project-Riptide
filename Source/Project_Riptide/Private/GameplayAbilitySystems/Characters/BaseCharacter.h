@@ -22,7 +22,7 @@ public:
 	//----------------------------------------------------------------------------------//
 	
 	//Ability system component
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Abilities") class UCombatAbilitysystemComponent* CombatAbilitySystemComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities") TObjectPtr<UCombatAbilitysystemComponent> CombatAbilitySystemComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities") TObjectPtr<UCombatAttributeSet> CombatAttributeSet;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Abilities") TSubclassOf<UGameplayEffect> StartupEffects;
@@ -73,4 +73,9 @@ protected:
 	
 public:	
 	virtual  UAbilitySystemComponent* GetAbilitySystemComponent() const override; //grabbing the ability system component for any child of this class
+	
+	//----------------------------------------------------------------------------------//
+	//									Hitbox
+	//----------------------------------------------------------------------------------//
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat") TObjectPtr<class UMeleeHitBoxComponent> MeleeHitbox;
 };

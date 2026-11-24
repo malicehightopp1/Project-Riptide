@@ -7,6 +7,7 @@
 namespace CombatTags
 {
 	UE_DEFINE_GAMEPLAY_TAG(State_Dead, "State.Dead");
+	UE_DEFINE_GAMEPLAY_TAG(State_Attacking, "State.Attacking");
 	
 	UE_DEFINE_GAMEPLAY_TAG(Class_Warrior, "Class.Warrior");
 	UE_DEFINE_GAMEPLAY_TAG(Class_Tank, "Class.Tank");
@@ -26,4 +27,6 @@ namespace CombatTags
 	UE_DEFINE_GAMEPLAY_TAG(Input_Power, "Input.Power");
 	
 	UE_DEFINE_GAMEPLAY_TAG(Data_Damage, "Data.Damage");
+	
+	UE_DEFINE_GAMEPLAY_TAG(Event_Melee_Hit, "Event.Melee.Hit");
 }
