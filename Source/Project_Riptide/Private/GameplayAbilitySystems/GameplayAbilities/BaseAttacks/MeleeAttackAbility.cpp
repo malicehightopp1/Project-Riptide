@@ -34,7 +34,7 @@ void UMeleeAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 
 void UMeleeAttackAbility::OnHitEvent(FGameplayEventData Payload)
 {
-	//Your existing function does the multipliers, affinity, GE and XP-on-kill
+	//function does the multipliers, affinity, GE and XP-on-kill
 	ApplyDamageToTarget(const_cast<AActor*>(Payload.Target.Get()), BaseDamage);
 }
 
